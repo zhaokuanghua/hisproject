@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neuedu.his.model.mapper.InspectItemRecordMapper">
+	<insert id="saveSIRecord" parameterType="Inspectitemrecord">
+		insert into inspectitemrecord(patientid,inspectitemid,count,price,paystatus,status,operator,operatedate)
+		values (#{patientid},#{inspectitemid},#{count},#{price},#{paystatus},#{status},#{operator},#{operatedate})
+	</insert>
+	<update id="getPatientAndPaysByNo" parameterType="map">
+		update inspectitemrecord
+		set paystatus=#{paystatus}, operator=#{operator},operatedate=#{operatedate}
+		where patientid=#{patientid}
+	</update>
+</mapper>

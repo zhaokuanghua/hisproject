@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neuedu.his.model.mapper.PatientMapper">
+	<select id="getPatientId" resultType="Patient">
+		select ifnull(max(patientid),0)+1 patientid from patient
+	</select>
+
+	<select id="selectPatients" resultMap="presult">
+		select
+		p.patientid,p.name,p.sex,p.birthday,p.idcard,l.levelname,p.pdate,mr.mrdate,p.diagnosed,p.pflag,p.pstatus,d.deptname,doc.dname
+		from patient p left outer join medicalrecord mr on p.mrid
+		=mr.mrid,level l,dept d,doctor doc
+		where p.doctorid = doc.doctorid
+		and d.deptid = doc.deptid
+		and doc.levelid = l.levelid
+		and p.pdate = CURRENT_DATE()
+	</select>
+	<resultMap type="Patient" id="presult">
+		<result property="patientid" column="patientid"></result>
+		<result property="name" column="name"></result>
+		<result property="sex" column="sex"></result>
+		<result property="birthday" column="birthday"></result>
+		<result property="idcard" column="idcard"></result>
+		<result property="pdate" column="pdate"></result>
+		<result property="diagnosed" column="diagnosed"></result>
+		<result property="pstatus" column="pstatus"></result>
+		<result property="pflag" column="pflag"></result>
+		<association property="medicalRecord" column="mrid"
+			javaType="Medicalrecord" resultMap="mresult"></association>
+		<association property="doctor" column="doctorid"
+			javaType="Doctor" resultMap="dresult"></association>
+	</resultMap>
+	
+	<resultMap type="Medicalrecord" id="mresult">
+		<result property="mrid" column="mrid"></result>
+		<result property="mainsuit" column="mainsuit"></result>
+		<result property="presenthistory" column="presenthistory"></result>
+		<result property="pasthistory" column="pasthistory"></result>
+		<result property="personalhistory" column="personalhistory"></result>
+		<result property="mrdate" column="mrdate"></result>
+	</resultMap>
+	
+	<resultMap type="Doctor" id="dresult">
+		<result property="dname" column="dname"></result>
+		<association property="dept" column="deptid"
+			javaType="Dept" resultMap="deptresult"></association>
+		<association property="level" column="levelid"
+			javaType="Level" resultMap="lresult"></association>
+	</resultMap>
+	<resultMap type="Dept" id="deptresult">
+		<result property="deptname" column="deptname"></result>
+	</resultMap>
+	<resultMap type="Level" id="lresult">
+		<result property="levelname" column="levelname"></result>
+	</resultMap>
+	
+	<insert id="savePatient" parameterType="Patient">
+		insert into patient(patientid,name,sex,age,birthday,idcard,address,doctorid,pflag,patientfee,pdate,diagnosed,pstatus,status,operator,operatedate)
+		values (#{patientid},#{name},#{sex},#{age},#{birthday},#{idcard},#{address},#{doctor.doctorid},#{pflag},#{patientfee},#{pdate},#{diagnosed},#{pstatus},#{status},#{operator},#{operatedate})
+	</insert>
+	
+	
+	
+	<select id="getPatientByNo" parameterType="int" resultMap="presult">
+		select
+		p.patientid,p.name,p.sex,p.birthday,p.idcard,l.levelname,p.pdate,mr.mrid,mr.mrdate,mr.mainsuit,mr.presenthistory,mr.pasthistory,mr.personalhistory,p.diagnosed,p.pflag,p.pstatus,d.deptname,doc.dname
+		from patient p left outer join medicalrecord mr on p.mrid=mr.mrid,
+		level l,dept d,doctor doc
+		where p.doctorid = doc.doctorid
+		and d.deptid = doc.deptid
+		and doc.levelid = l.levelid
+		and p.patientid = #{patientid}
+		and p.status=1
+	</select>
+	
+	<update id="updatePstatus" parameterType="Patient">
+		update patient 
+		set pstatus=#{pstatus},operator=#{operator},operatedate=#{operatedate} 
+		where patientid=#{patientid}
+	</update>
+	
+	<select id="getPatientByDoctor" parameterType="int" resultMap="presult">
+		select
+		p.patientid,p.name,p.sex,p.birthday,p.idcard,l.levelname,p.pdate,mr.mrdate,p.diagnosed,p.pflag,p.pstatus,d.deptname,doc.dname
+		from patient p left outer join medicalrecord mr on p.mrid=mr.mrid,level l,dept d,doctor doc,
+		user u
+		where p.doctorid = doc.doctorid
+		and d.deptid = doc.deptid
+		and doc.levelid = l.levelid
+		and p.pdate = CURRENT_DATE()
+		and p.doctorid=u.doctorid
+		and u.userid=#{userid}
+	</select>
+	
+	<update id="updateInfo" parameterType="map">
+		update patient 
+		set operator=#{operator},operatedate=#{operatedate},mrid=#{mrid},diagnosed=#{diagnosed}
+		where patientid=#{patientid}
+	</update>
+	
+	<select id="getPatientAndPaysByNo" parameterType="int" resultMap="ppresult">
+		select
+		p.patientid,p.name,p.sex,p.birthday,p.idcard,l.levelname,p.pdate,mr.mrdate,p.diagnosed,p.pflag,p.pstatus,d.deptname,doc.dname,
+		ci.checkitemname ciname,cir.count cicount,cir.price ciprice,ii.inspectitemname iiname,iir.count iicount,iir.price iiprice
+		from patient p left outer join medicalrecord mr on p.mrid=mr.mrid 
+		left outer join checkitemrecord cir on p.patientid = cir.patientid
+		left outer join inspectitemrecord iir on p.patientid = iir.patientid,
+		level l,dept d,doctor doc,checkitem ci,inspectitem ii 
+		where p.doctorid = doc.doctorid
+		and d.deptid = doc.deptid
+		and doc.levelid = l.levelid
+		and cir.checkitemid=ci.checkitemid
+		and iir.inspectitemid=ii.inspectitemid
+		and p.patientid = #{patientid}
+		and p.status=1
+	</select>
+	<resultMap type="Patient" id="ppresult">
+		<result property="patientid" column="patientid"></result>
+		<result property="name" column="name"></result>
+		<result property="sex" column="sex"></result>
+		<result property="birthday" column="birthday"></result>
+		<result property="idcard" column="idcard"></result>
+		<result property="pdate" column="pdate"></result>
+		<result property="diagnosed" column="diagnosed"></result>
+		<result property="pstatus" column="pstatus"></result>
+		<result property="pflag" column="pflag"></result>
+		<association property="medicalRecord" column="mrid" javaType="Medicalrecord" resultMap="mresult"></association>
+		<association property="doctor" column="doctorid" javaType="Doctor" resultMap="dresult"></association>
+		<collection property="checkitemrecord" ofType="Checkitemrecord">
+			<result property="count" column="cicount"></result>
+			<result property="price" column="ciprice"></result>
+			<association property="checkitem" column="checkitemid"
+			javaType="Checkitem" resultMap="ckresult"></association>
+		</collection>
+		<collection property="inspectitemrecord" ofType="Inspectitemrecord">
+			<result property="count" column="iicount"></result>
+			<result property="price" column="iiprice"></result>
+			<association property="inspectitem" column="inspectitemid"
+			javaType="Inspectitem" resultMap="ikresult"></association>
+		</collection>
+	</resultMap>
+	<resultMap type="Checkitem" id="ckresult">
+		<result column="ciname" property="checkitemname"></result>
+	</resultMap>
+	<resultMap type="Inspectitem" id="ikresult">
+		<result column="iiname" property="inspectitemname"></result>
+	</resultMap>
+</mapper>

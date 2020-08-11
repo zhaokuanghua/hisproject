@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neuedu.his.model.mapper.MedicalRecordMapper">
+	<insert id="saveMedicalRecord" parameterType="Medicalrecord">
+		<selectKey keyColumn="mrid" keyProperty="mrid" order="BEFORE" resultType="int">
+			select ifnull(max(mrid),0)+1 from medicalrecord
+		</selectKey>
+		insert into medicalrecord(mrid,mainsuit,presenthistory,pasthistory,personalhistory,mrdate,status,operator,operatedate)
+		values (#{mrid},#{mainsuit},#{presenthistory},#{pasthistory},#{personalhistory},#{mrdate},#{status},#{operator},#{operatedate})
+	</insert>
+	<update id="updateMedicalRecord" parameterType="Medicalrecord">
+		update medicalrecord
+		set result=#{result},illnessid=#{illnessid},operator=#{operator},operatedate=#{operatedate}
+		where mrid=#{mrid}
+	</update>
+</mapper>

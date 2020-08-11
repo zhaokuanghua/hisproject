@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.neuedu.his.model.mapper.UserMapper">
+
+	<select id="login" parameterType="User" resultMap="userResult">
+		select user.*, d.*
+		from user left outer join doctor d
+		on user.doctorid=d.doctorid
+		where username=#{username} and password=#{password}
+		and role=#{role}
+	</select>
+	
+	<resultMap type="User" id="userResult">
+		<result column="userid" property="userid"/>
+		<result column="username" property="username"/>
+		<result column="password" property="password"/>
+		<result column="realname" property="realname"/>
+		<result column="role" property="role"/>
+		<association property="doctor" column="doctorid" javaType="Doctor" resultMap="dresult"></association>
+	</resultMap>
+	
+	<resultMap type="Doctor" id="dresult">
+		<result column="doctorid" property="doctorid"/>
+		<result column="dname" property="dname"/>
+	</resultMap>
+</mapper>
